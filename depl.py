@@ -18,81 +18,79 @@ x=np.array(x)
 y=np.array(y)
 plt.figure(1)
 plt.plot()
-plt.plot(x,y,'.')
-gx=np.logical_and(x>80,x<160)
+plt.xlabel('Voltage')
+plt.ylabel('cp')
+plt.plot(x,y,'b.',label='rawdata')#Rawdatafit
+plt.legend()
+plt.show()
 
-f=x[gx]
-d=y[gx]
-
-#print(deplV,deplC)
-
-
-f2 = cp(f,d)
-xmin=f[f2(f,1)==min(f2(f,1))][0]
+gx=np.logical_and(x>80,x<160)#data limitation and transformation to numpy
+xlim=x[gx]
+ylim=y[gx]
+f2 = cp(xlim,ylim)#definition of f2 with limited data
+xmin=xlim[f2(xlim,1)==min(f2(xlim,1))][0]#minimum of 1. diff of f2 -> [0]array to float
 
 
 
-print("Minimum: ",xmin)
-aftermin=np.logical_and(x>xmin,x<160)
+print("Turningpoint: ",xmin)
+aftermin=np.logical_and(x>xmin,x<160)#data after turningpoint
 deplV = x[aftermin]
 deplC = y[aftermin]
 
-#print(f2(f))
-x2=np.arange(80,140,0.1)
+int1=np.arange(80,140,0.1)#set up interpolation
 plt.figure(2)
-plt.plot(f,d,'r+')
-plt.plot(x2,f2(x2),'.',lw=2,color="blue")
+plt.plot(xlim,ylim,'r+',label='Data')
+plt.plot(int1,f2(int1),'.',lw=2,color="blue", label='Interpolation')#plot interpolation
+plt.legend()
+plt.xlabel('Voltage')
+plt.ylabel('cp')
 plt.show()
 
-x3=np.arange(xmin,160,0.01)
+
+
+x3=np.arange(xmin,160,0.01)#
 f3 = cp(deplV,deplC)
-
-
-#print("f3: ",f3(x3,2))
-
-neglist = []
-f3=f3(x3,2)#f3 sind immer die y-werte
-
-neglist=x3[np.logical_or(f3<0, f3==0)][0]
-print("neglist: ",neglist)
+depldata = []
+f3=f3(x3,2)#f3 always y-values, f3(data,n-diff)
+depldata=x3[np.logical_or(f3<0, f3==0)][0]
+print("DepletionData: ",depldata)
 #1. negative value in 2.Diff-> almost0->turning point for f(x)-> turning in depletion region
 
 
 
-fitgrenze=np.logical_and(f>=xmin-20, f<=f[-1])
-
-f=f[fitgrenze]
-d=d[fitgrenze]
-#out1 = minimize(lnfunc,fit_params, args=(f,))
-#const_model=ConstantModel(d[-1])
-step_mod = StepModel(form='linear', prefix='step_')
-line_mod = LinearModel(prefix='line_')
-exp_mod = ExponentialModel(prefix='exp_')
-
-pars = line_mod.make_params(intercept=f.min(), slope=0)
-pars += step_mod.guess(d, x=f, center=xmin)
+fitgrenze=np.logical_and(xlim>=xmin-20, xlim<=xlim[-1])#set up limits for fitfunc
+xlim=xlim[fitgrenze]
+ylim=ylim[fitgrenze]
+step_mod = StepModel(form='linear', prefix='step_')#fit step_model
+line_mod = LinearModel(prefix='line_')#fit lin_model
+#exp_mod = ExponentialModel(prefix='exp_')
+pars = line_mod.make_params(intercept=xlim.min(), slope=0)#initial conditions for both mods
+pars += step_mod.guess(ylim, x=xlim, center=xmin)
 #pars = exp_mod.guess(d, x=f)
 mod = step_mod + line_mod
-out = mod.fit(d, pars, x=f)
-
-#print(out.fit_report())
+out = mod.fit(ylim, pars, x=xlim)
 
 plt.figure(3)
-plt.plot(f,d,'+')
-plt.plot(f, out.best_fit, 'r-', label='best fit')
+plt.plot(xlim,ylim,'r+', label='Data')
+plt.plot(xlim, out.best_fit, 'b-', label='Fit (Line, Linear_Step)')
 plt.legend(loc='best')
-plt.show()
+plt.xlabel('Voltage')
+plt.ylabel('cp')
+plt.show()#plot of data and fit
 
-spfit=cp(f,out.best_fit)
-diff1=spfit(x2,1)
-diff2=spfit(x2,2)
-vdep1=x2[diff2==max(diff2)][0]
-print("Depletionfit: ",vdep1)
+spfit=cp(xlim,out.best_fit)
+diff1=spfit(int1,1)
+diff2=spfit(int1,2)
+vdep1=int1[diff2==max(diff2)][0]
+print("DepletionFit: ",vdep1)
 
 
 plt.figure(4)
-plt.plot(x2,diff1,".")
-plt.plot(x2,diff2,"+")
+plt.plot(int1,diff1,"r+", label='1. Diff interpolation')
+plt.plot(int1,diff2,"b.", label='2. Diff interpolation')
+plt.legend()
+plt.xlabel('Voltage')
+plt.ylabel('cp')
 plt.show()
 
 #plt.figure()
