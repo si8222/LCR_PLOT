@@ -8,7 +8,9 @@ from lmfit import Parameters, fit_report, minimize
 x = []
 y = []
 z = []
-with open('/home/nils/Desktop/depletion.csv','r') as csvfile:
+#with open('/home/nils/Desktop/depletion.csv','r') as csvfile:
+with open('/home/nils/Desktop/PAD8AI_Wafer04/2_200V_1_1000khz4stpsdata/depletion.csv','r') as csvfile:
+#with open('/home/nils/Desktop/PAD8AI_Wafer04/1_10khz_0_200Vlog.csv','r') as csvfile:
     plots = csv.reader(csvfile, delimiter=' ')
     next(plots)#headers
     for row in plots:
@@ -55,8 +57,6 @@ f3=f3(x3,2)#f3 always y-values, f3(data,n-diff)
 depldata=x3[np.logical_or(f3<0, f3==0)][0]
 print("DepletionData: ",depldata)
 #1. negative value in 2.Diff-> almost0->turning point for f(x)-> turning in depletion region
-
-
 
 fitgrenze=np.logical_and(xlim>=xmin-20, xlim<=xlim[-1])#set up limits for fitfunc
 xlim=xlim[fitgrenze]
